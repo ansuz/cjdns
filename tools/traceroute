@@ -63,12 +63,17 @@ var tracePath = function (target, queryNode, cjdns, cb, doneCb) {
 };
 
 var main = function (target) {
+    if(!target){
+        console.log("No target provided...\n...exiting");
+        console.log("Next time try `./traceroute <ipv6 || AAAA record>`");
+        return;
+    }
 
     var cjdns;
     var self;
     var lastRet;
     nThen(function (waitFor) {
-
+        // Section 1
         Cjdns.connectWithAdminInfo(waitFor(function (c) { cjdns = c; }));
 
         if (!validTarget(target)) {
@@ -80,44 +85,61 @@ var main = function (target) {
         }
 
     }).nThen(function (waitFor) {
-
+        // Section 2
         cjdns.RouterModule_getPeers("0000.0000.0000.0001", waitFor(function (err, ret) {
             if (err) { throw err; }
             self = ret.peers[0];
+            console.log("\nSelf:\n%s",self);
         }));
 
     }).nThen(function (waitFor) {
-
+        // Section 3
         process.stdout.write(self + ' ' + highBits(self));
         tracePath(target, self, cjdns, function (ret) {
             lastRet = ret;
             process.stdout.write('  ' + ret.ms + 'ms\n');
-            if (ret.nodes.length === 0) {
+            if (ret.nodes && ret.nodes.length === 0) {
                 console.log('cornered');
-            } else if (ret.nodes[0] !== ret.from) {
+            } else if (ret.nodes && ret.nodes[0] !== ret.from) {
                 process.stdout.write(ret.nodes[0] + ' ' + highBits(ret.nodes[0]));
+            }else {
+                console.error("Fell through conditional in section 3");
+                console.error(ret);
+                console.error();
             }
         }, waitFor());
 
     }).nThen(function (waitFor) {
-
+        // Section 4
+        console.error("Section 4\n");
         if (!lastRet || lastRet.nodes[0] !== lastRet.from) { return; }
         console.log('success, trying reverse trace');
         process.stdout.write(lastRet.from);
         tracePath(nodeToIP6(self), lastRet.from, cjdns, function (ret) {
             lastRet = ret;
             process.stdout.write('  ' + ret.ms + 'ms\n');
-            if (ret.nodes.length === 0) {
+            if (ret.nodes && ret.nodes.length === 0) {
                 console.log('cornered');
-            } else if (ret.nodes[0] !== ret.from) {
+            } else if (ret.nodes && ret.nodes[0] !== ret.from) {
                 process.stdout.write(ret.nodes[0] + ' ' + highBits(ret.nodes[0]));
+                console.log("\nSection 4 elif");
+                console.log(ret);
+
+            } else{
+                console.error("Fell through conditional in section 4");
+                console.error(ret);
+                console.error();
             }
         }, waitFor());
 
     }).nThen(function (waitFor) {
+        // Section 5
         console.log();
         cjdns.disconnect();
     });
 };
 
-main(process.argv[process.argv.length-1]);
+// we're looking for argv[2]
+var args=process.argv.slice(2);
+
+main(args[0]);
