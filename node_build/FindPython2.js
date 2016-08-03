@@ -49,6 +49,6 @@ var find = module.exports.find = function (tempFile, callback) {
         }).nThen;
     });
     nt(function (waitFor) {
-        callback(new Error("no sutible python2 executable found ( < 2.7 unsupported)"));
+        callback(new Error("no suitable python2 executable found ( < 2.7 unsupported)"));
     });
 };
