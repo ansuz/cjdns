@@ -72,4 +72,4 @@ var convert = module.exports.convert = function (pubKey) {
     return out.join(':');
 };
 
-//console.log(convert('rjndc8rvg194ddf2j5v679cfjcpmsmhv8p022q3lvpym21cqwyh0.k'));
+console.log(convert('rjndc8rvg194ddf2j5v679cfjcpmsmhv8p022q3lvpym21cqwyh0.k'));
